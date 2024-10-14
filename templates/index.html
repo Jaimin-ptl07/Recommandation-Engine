@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Recommendations</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .card-header {
+            font-weight: bold;
+            background-color: #007bff;
+            color: white;
+        }
+        .recommendation-item {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">User Recommendations</h1>
+        <form id="userForm" class="text-center">
+            <div class="form-group">
+                <label for="userId">Enter User ID:</label>
+                <input type="number" class="form-control" id="userId" placeholder="User ID" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Get Recommendations</button>
+        </form>
+        <div id="recommendations" class="mt-4"></div>
+    </div>
+
+    <script>
+        // Handle form submission
+        document.getElementById('userForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Prevent form submission
+
+            const userId = document.getElementById('userId').value;
+
+            // Fetch recommendations for the specific user
+            fetch(`/recommend/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const recommendationsDiv = document.getElementById('recommendations');
+                    recommendationsDiv.innerHTML = '';  // Clear previous recommendations
+
+                    if (data.error) {
+                        recommendationsDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                        return;
+                    }
+
+                    // Create user card for recommendations
+                    const userCard = document.createElement('div');
+                    userCard.classList.add('card');
+                    userCard.innerHTML = `
+                        <div class="card-header">
+                            Recommendations for User ID: ${userId}
+                        </div>
+                        <div class="card-body">
+                            ${data.recommendations.map(rec => `
+                                <div class="recommendation-item">
+                                    <strong>Item ID:</strong> ${rec.item_id}, <strong>Rating:</strong> ${rec.rating}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    recommendationsDiv.appendChild(userCard);
+                })
+                .catch(error => console.error('Error fetching recommendations:', error));
+        });
+    </script>
+</body>
+</html>
